@@ -1,36 +1,129 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Freedom Wall
 
-## Getting Started
+A modern freedom wall website built with Next.js, Supabase, and Tailwind CSS. Users can submit messages with optional images, and admins can approve or reject posts before they appear on the wall.
 
-First, run the development server:
+## Features
+
+- 🎨 Beautiful, modern UI with Tailwind CSS
+- 📝 Submit messages with optional images
+- 👤 Anonymous posting with codenames
+- 🔐 Admin panel for post approval
+- ⚡ Fast and responsive design
+- 🚀 Ready for Vercel deployment
+
+## Tech Stack
+
+- **Frontend**: Next.js 16 (App Router)
+- **Database**: Supabase (PostgreSQL)
+- **Styling**: Tailwind CSS
+- **Hosting**: Vercel (ready to deploy)
+
+## Prerequisites
+
+- Node.js 18+ installed
+- A Supabase account and project
+
+## Setup Instructions
+
+### 1. Clone and Install
+
+```bash
+npm install
+```
+
+### 2. Set Up Supabase
+
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Go to SQL Editor and run the SQL from `supabase-setup.sql` file (or copy-paste the contents)
+3. Get your Supabase URL and anon key from Settings > API
+
+### 3. Configure Environment Variables
+
+1. Copy `env.example` to `.env.local`:
+```bash
+cp env.example .env.local
+```
+
+2. Fill in your Supabase credentials and admin password:
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+ADMIN_PASSWORD=your_secure_admin_password_here
+```
+
+**Important:** Set a strong password for `ADMIN_PASSWORD` to protect your admin panel. This password is required to access `/admin`.
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Database Schema
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The `posts` table has the following columns:
 
-## Learn More
+- `id` (BIGSERIAL, Primary Key) - Auto-incrementing unique identifier
+- `created_at` (TIMESTAMPTZ) - Timestamp of when the post was created (default: now())
+- `message` (TEXT) - The post message content
+- `images` (TEXT[]) - Array of image URLs (optional)
+- `codename` (TEXT) - The anonymous codename of the poster
+- `is_approved` (BOOLEAN) - Whether the post has been approved by admin (default: false)
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+├── app/
+│   ├── api/
+│   │   └── posts/          # API routes for posts
+│   ├── admin/              # Admin panel page
+│   ├── layout.tsx          # Root layout
+│   └── page.tsx            # Main freedom wall page
+├── components/
+│   ├── PostCard.tsx        # Post display component
+│   └── PostForm.tsx        # Post submission form
+├── lib/
+│   └── supabase.ts         # Supabase client configuration
+└── types/
+    └── database.ts         # TypeScript types for database
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment to Vercel
 
-## Deploy on Vercel
+1. Push your code to GitHub
+2. Import your repository in Vercel
+3. Add your environment variables in Vercel project settings:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `ADMIN_PASSWORD` (set a strong password for admin access)
+4. Deploy!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Security Notes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Admin Panel Protection**: The admin panel is password-protected. Set `ADMIN_PASSWORD` in your `.env.local` file. The password is verified server-side.
+- The current implementation uses the anon key for all operations. For production:
+  - Set up proper Row Level Security (RLS) policies in Supabase
+  - Use a strong, unique password for `ADMIN_PASSWORD`
+  - Consider using environment variables in Vercel for production
+  - Use Supabase Storage for image uploads instead of storing URLs directly
+  - Implement rate limiting for API routes
+
+## Image Upload
+
+Images are currently stored as base64 data URLs in the database. This ensures images work across all browsers and sessions. 
+
+**Note:** Base64 encoding increases the data size by about 33%. For production with many images, consider:
+
+1. Setting up Supabase Storage
+2. Uploading images to a storage bucket
+3. Storing the returned URLs in the database
+
+**Current limitations:**
+- Maximum image size: 5MB per image
+- Images are embedded in the database (increases database size)
+
+## License
+
+MIT
