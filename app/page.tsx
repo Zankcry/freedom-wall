@@ -62,7 +62,7 @@ export default function Home() {
               <Link
                 href="/submit"
                 className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
+            >
                 Submit Your First Message
               </Link>
             </div>
@@ -71,7 +71,7 @@ export default function Home() {
               {posts.map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}
-            </div>
+        </div>
           )}
         </div>
       </div>

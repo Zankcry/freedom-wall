@@ -70,13 +70,12 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       
-      // Limit file size (3MB per image before compression)
-      // Note: Vercel has a 4.5MB request body limit, so we need to be careful
-      const maxSize = 3 * 1024 * 1024; // 3MB
+      // Limit file size (2MB per image before compression)
+      const maxSize = 2 * 1024 * 1024; // 2MB
       const oversizedFiles = files.filter(file => file.size > maxSize);
       
       if (oversizedFiles.length > 0) {
-        setError(`Some images are too large. Maximum size is 3MB per image.`);
+        setError(`Some images are too large. Maximum size is 2MB per image.`);
         return;
       }
 
@@ -95,9 +94,8 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
         const base64Images = await Promise.all(base64Promises);
         
         // Check total size (base64 is ~33% larger, and Vercel limit is ~4.5MB)
-        // Allow up to 4MB total to stay safely under Vercel's 4.5MB limit
         const totalSize = base64Images.reduce((sum, img) => sum + img.length, 0);
-        const maxTotalSize = 4 * 1024 * 1024; // 4MB total (safety margin for Vercel's 4.5MB limit)
+        const maxTotalSize = 3 * 1024 * 1024; // 3MB total for safety
         
         if (totalSize > maxTotalSize) {
           setError(`Total image size is too large. Please use fewer or smaller images.`);
@@ -178,7 +176,16 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      {!onSuccess && <h2 className="text-2xl font-bold mb-4 text-gray-800">Share Your Message</h2>}
+      {!onSuccess && (
+        <>
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">Share Your Message</h2>
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-gray-700">
+              <strong>📋 Review Process:</strong> All messages are reviewed by an administrator and will be <strong>approved or rejected</strong> before being posted on the Freedom Wall.
+            </p>
+          </div>
+        </>
+      )}
       
       {error && (
         <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -187,8 +194,20 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
       )}
 
       {success && (
-        <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-          Your message has been submitted! It will appear after admin approval.
+        <div className="mb-4 p-4 bg-green-50 border border-green-400 rounded-lg">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-green-600 mt-0.5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="font-semibold text-green-800 mb-1">Message Submitted Successfully!</p>
+              <p className="text-sm text-green-700">
+                Your message has been received and will be reviewed by an administrator. 
+                It will be approved or rejected before being posted on the Freedom Wall. 
+                Thank you for your submission!
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -227,7 +246,7 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
           Images (Optional)
         </label>
         <p className="text-xs text-gray-500 mb-2">
-          Maximum 4 images, 3MB each. Images will be automatically compressed.
+          Maximum 4 images, 2MB each. Images will be automatically compressed.
         </p>
         <input
           type="file"

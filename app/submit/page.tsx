@@ -52,10 +52,16 @@ export default function SubmitPage() {
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Message Submitted!</h2>
-              <p className="text-gray-600 mb-4">
-                Your message has been submitted successfully. It will appear on the Freedom Wall
-                after admin approval.
+              <p className="text-gray-600 mb-3">
+                Your message has been submitted successfully.
               </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-left">
+                <p className="text-sm text-gray-700 font-medium mb-1">📋 Review Process</p>
+                <p className="text-sm text-gray-600">
+                  Your message will be reviewed by an administrator and will be either <strong>approved</strong> or <strong>rejected</strong> before being posted on the Freedom Wall. 
+                  This process helps maintain a positive community environment.
+                </p>
+              </div>
               <p className="text-sm text-gray-500">Redirecting to Freedom Wall...</p>
             </div>
           ) : (
