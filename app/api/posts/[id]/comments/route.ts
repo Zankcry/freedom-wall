@@ -2,12 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { CommentInsert } from '@/types/database';
 
 async function getSupabaseClient() {
-  try {
-    const { supabase } = await import('@/lib/supabase');
-    return supabase;
-  } catch (error) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error(
-      'Supabase is not configured. Please check your .env.local file and ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.'
+      'Missing Supabase environment variables. Please check your Vercel environment variables and ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.'
+    );
+  }
+
+  try {
+    const { createClient } = await import('@supabase/supabase-js');
+    const client = createClient(supabaseUrl, supabaseAnonKey);
+    return client;
+  } catch (error) {
+    console.error('Supabase initialization error:', error);
+    throw new Error(
+      'Failed to initialize Supabase client. Please check your environment variables.'
     );
   }
 }
