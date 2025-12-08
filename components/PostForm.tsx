@@ -70,12 +70,13 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       
-      // Limit file size (2MB per image before compression)
-      const maxSize = 2 * 1024 * 1024; // 2MB
+      // Limit file size (3MB per image before compression)
+      // Note: Vercel has a 4.5MB request body limit, so we need to be careful
+      const maxSize = 3 * 1024 * 1024; // 3MB
       const oversizedFiles = files.filter(file => file.size > maxSize);
       
       if (oversizedFiles.length > 0) {
-        setError(`Some images are too large. Maximum size is 2MB per image.`);
+        setError(`Some images are too large. Maximum size is 3MB per image.`);
         return;
       }
 
@@ -94,8 +95,9 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
         const base64Images = await Promise.all(base64Promises);
         
         // Check total size (base64 is ~33% larger, and Vercel limit is ~4.5MB)
+        // Allow up to 4MB total to stay safely under Vercel's 4.5MB limit
         const totalSize = base64Images.reduce((sum, img) => sum + img.length, 0);
-        const maxTotalSize = 3 * 1024 * 1024; // 3MB total for safety
+        const maxTotalSize = 4 * 1024 * 1024; // 4MB total (safety margin for Vercel's 4.5MB limit)
         
         if (totalSize > maxTotalSize) {
           setError(`Total image size is too large. Please use fewer or smaller images.`);
@@ -225,7 +227,7 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
           Images (Optional)
         </label>
         <p className="text-xs text-gray-500 mb-2">
-          Maximum 4 images, 2MB each. Images will be automatically compressed.
+          Maximum 4 images, 3MB each. Images will be automatically compressed.
         </p>
         <input
           type="file"
