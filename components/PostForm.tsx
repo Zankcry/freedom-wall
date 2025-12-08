@@ -11,40 +11,100 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  const compressImage = (file: File, maxWidth: number = 1920, maxHeight: number = 1920, quality: number = 0.8): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Calculate new dimensions
+          if (width > height) {
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = (width * maxHeight) / height;
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Failed to compress image'));
+                return;
+              }
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = () => reject(new Error('Failed to read compressed image'));
+              reader.readAsDataURL(blob);
+            },
+            'image/jpeg',
+            quality
+          );
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       
-      // Limit file size (e.g., 5MB per image)
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      // Limit file size (2MB per image before compression)
+      const maxSize = 2 * 1024 * 1024; // 2MB
       const oversizedFiles = files.filter(file => file.size > maxSize);
       
       if (oversizedFiles.length > 0) {
-        setError(`Some images are too large. Maximum size is 5MB per image.`);
+        setError(`Some images are too large. Maximum size is 2MB per image.`);
+        return;
+      }
+
+      // Limit number of images
+      if (files.length > 4) {
+        setError(`Maximum 4 images allowed.`);
         return;
       }
       
       setImageFiles(files);
       
       try {
-        // Convert files to base64 data URLs for permanent storage
-        // Base64 images will work across all browsers and sessions
-        const base64Promises = files.map((file) => {
-          return new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              resolve(reader.result as string);
-            };
-            reader.onerror = () => {
-              reject(new Error(`Failed to read file: ${file.name}`));
-            };
-            reader.readAsDataURL(file);
-          });
-        });
-        
-        const base64Images = await Promise.all(base64Promises);
-        setImages(base64Images);
         setError(''); // Clear any previous errors
+        // Compress and convert images to base64
+        const base64Promises = files.map((file) => compressImage(file));
+        const base64Images = await Promise.all(base64Promises);
+        
+        // Check total size (base64 is ~33% larger, and Vercel limit is ~4.5MB)
+        const totalSize = base64Images.reduce((sum, img) => sum + img.length, 0);
+        const maxTotalSize = 3 * 1024 * 1024; // 3MB total for safety
+        
+        if (totalSize > maxTotalSize) {
+          setError(`Total image size is too large. Please use fewer or smaller images.`);
+          setImages([]);
+          setImageFiles([]);
+          return;
+        }
+        
+        setImages(base64Images);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to process images');
         setImages([]);
@@ -75,8 +135,24 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to submit post');
+        let errorMessage = 'Failed to submit post';
+        
+        // Handle 413 Payload Too Large error specifically
+        if (response.status === 413) {
+          errorMessage = 'Images are too large. Please use fewer or smaller images (max 2MB each, 4 images total).';
+          setImages([]);
+          setImageFiles([]);
+        } else {
+          try {
+            const data = await response.json();
+            errorMessage = data.error || errorMessage;
+          } catch (jsonError) {
+            // If response is not JSON, get text
+            const text = await response.text();
+            errorMessage = text || errorMessage;
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       setSuccess(true);
@@ -148,6 +224,9 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
         <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-2">
           Images (Optional)
         </label>
+        <p className="text-xs text-gray-500 mb-2">
+          Maximum 4 images, 2MB each. Images will be automatically compressed.
+        </p>
         <input
           type="file"
           id="images"
