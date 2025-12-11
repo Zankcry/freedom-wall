@@ -5,6 +5,7 @@ import { Post } from '@/types/database';
 import PostCard from '@/components/PostCard';
 import Link from 'next/link';
 import AdminLogin from '@/components/AdminLogin';
+import BackgroundStickers from '@/components/BackgroundStickers';
 
 export default function AdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -143,8 +144,9 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 relative">
+      <BackgroundStickers />
+      <div className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
         <header className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>

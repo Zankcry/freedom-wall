@@ -4,6 +4,7 @@ import { useState } from 'react';
 import PostForm from '@/components/PostForm';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import BackgroundStickers from '@/components/BackgroundStickers';
 
 export default function SubmitPage() {
   const router = useRouter();
@@ -18,8 +19,9 @@ export default function SubmitPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 relative">
+      <BackgroundStickers />
+      <div className="container mx-auto px-4 py-8 max-w-3xl relative z-10">
         <header className="mb-8">
           <Link
             href="/"

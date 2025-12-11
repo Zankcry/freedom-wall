@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import PostCard from '@/components/PostCard';
 import { Post } from '@/types/database';
 import Link from 'next/link';
+import BackgroundStickers from '@/components/BackgroundStickers';
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -31,8 +32,9 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 relative">
+      <BackgroundStickers />
+      <div className="container mx-auto px-4 py-8 max-w-4xl relative z-10">
         <header className="text-center mb-8">
           <h1 className="text-5xl font-bold text-gray-800 mb-2">Freedom Wall</h1>
           <p className="text-gray-600 text-lg mb-6">Share your thoughts and messages</p>
