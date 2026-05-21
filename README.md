@@ -1,129 +1,156 @@
-# Freedom Wall
+# 🌟 Freedom Wall
 
-A modern freedom wall website built with Next.js, Supabase, and Tailwind CSS. Users can submit messages with optional images, and admins can approve or reject posts before they appear on the wall.
+A modern, interactive anonymous freedom wall website designed for communities. Express yourself freely, share thoughts, upload beautiful images, and connect through comments and real-time likes. 
 
-## Features
+Built with a cutting-edge tech stack featuring **Next.js 16 (App Router)**, **React 19**, **Supabase (PostgreSQL)**, and **Tailwind CSS v4.0**.
 
-- 🎨 Beautiful, modern UI with Tailwind CSS
-- 📝 Submit messages with optional images
-- 👤 Anonymous posting with codenames
-- 🔐 Admin panel for post approval
-- ⚡ Fast and responsive design
-- 🚀 Ready for Vercel deployment
+---
 
-## Tech Stack
+## ✨ Features
 
-- **Frontend**: Next.js 16 (App Router)
-- **Database**: Supabase (PostgreSQL)
-- **Styling**: Tailwind CSS
-- **Hosting**: Vercel (ready to deploy)
+- **🎨 Premium, Responsive UI**: A breathtaking interface built on custom glassmorphism components, custom minimal scrollbars, and vibrant color gradients.
+- **🌓 Adaptive Theme Modes**: Fully integrated light and dark modes with a gorgeous smooth-transitioning [ThemeToggle](file:///c:/Users/Zankcry/Documents/freedom-wall/components/ThemeToggle.tsx).
+- **👤 Anonymous Posting**: Submit posts securely under custom anonymous codenames.
+- **🖼️ Image Upload Support**: Share rich media with base64 embedded image uploads (supports file sizes up to 5MB).
+- **❤️ Real-time Likes**: Dynamic like/unlike interactions with instant heart micro-animations, with tracking backed by browser `localStorage` to ensure fair voting.
+- **💬 Nestable Comments**: Threaded comments under posts, featuring custom poster codenames and seamless updates.
+- **🎈 Floating Stickers**: Whimsical, randomized [BackgroundStickers](file:///c:/Users/Zankcry/Documents/freedom-wall/components/BackgroundStickers.tsx) float gently across the layout, giving it a playful, modern aesthetic.
+- **🔐 Secure Moderation Panel**: Password-protected Admin Panel with a server-side verified [AdminLogin](file:///c:/Users/Zankcry/Documents/freedom-wall/components/AdminLogin.tsx) system to approve, reject, or restore posts.
+- **🔄 Administrative Soft-Deletes**: Posts can be soft-deleted by admins (removing them instantly from the public wall but preserving records in the DB) and easily recovered via an undo filter.
 
-## Prerequisites
+---
 
-- Node.js 18+ installed
-- A Supabase account and project
+## 🛠️ Tech Stack & Architecture
 
-## Setup Instructions
+- **Frontend Core**: [Next.js 16.0.7](https://nextjs.org/) (App Router) & [React 19.2.0](https://react.dev/)
+- **Programming Language**: [TypeScript](https://www.typescriptlang.org/) (Strictly-typed endpoints and database mappings)
+- **Database & Serverless**: [Supabase PostgreSQL](https://supabase.com/)
+- **Styling & Animations**: [Tailwind CSS v4.0](https://tailwindcss.com/) & Native CSS cubic-bezier micro-animations
 
-### 1. Clone and Install
+---
+
+## 🚀 Getting Started
+
+### 1. Installation
+
+Clone this repository and install the dependencies:
 
 ```bash
 npm install
 ```
 
-### 2. Set Up Supabase
+### 2. Configure Environment Variables
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to SQL Editor and run the SQL from `supabase-setup.sql` file (or copy-paste the contents)
-3. Get your Supabase URL and anon key from Settings > API
+Create a `.env.local` file in your project root folder by copying the example environment file:
 
-### 3. Configure Environment Variables
-
-1. Copy `env.example` to `.env.local`:
 ```bash
 cp env.example .env.local
 ```
 
-2. Fill in your Supabase credentials and admin password:
-```
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-ADMIN_PASSWORD=your_secure_admin_password_here
+Open `.env.local` and configure your credentials:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-public-key
+ADMIN_PASSWORD=your-secure-admin-panel-password
 ```
 
-**Important:** Set a strong password for `ADMIN_PASSWORD` to protect your admin panel. This password is required to access `/admin`.
-
-### 4. Run Development Server
+### 3. Run Development Server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser to experience the Freedom Wall!
 
-## Database Schema
+---
 
-The `posts` table has the following columns:
+## 🗄️ Database Schemas
 
-- `id` (BIGSERIAL, Primary Key) - Auto-incrementing unique identifier
-- `created_at` (TIMESTAMPTZ) - Timestamp of when the post was created (default: now())
-- `message` (TEXT) - The post message content
-- `images` (TEXT[]) - Array of image URLs (optional)
-- `codename` (TEXT) - The anonymous codename of the poster
-- `is_approved` (BOOLEAN) - Whether the post has been approved by admin (default: false)
+The database leverages three primary tables in Supabase with integrated cascade deletes and optimized querying indexes.
 
-## Project Structure
+### `posts` Table
+Tracks public entries posted to the wall.
+- `id` (BIGINT, PK) - Auto-incrementing unique identifier
+- `created_at` (TIMESTAMPTZ) - Time of submission
+- `message` (TEXT) - Content of the message
+- `images` (TEXT[]) - Base64 media data URL array (optional)
+- `codename` (TEXT) - Anonymous author signature
+- `is_approved` (BOOLEAN) - Moderation status (default: `false`)
+- `is_deleted` (BOOLEAN) - Soft delete state (default: `false`)
+
+### `likes` Table
+Maintains distinct post likes linked to unique client footprints.
+- `id` (BIGINT, PK) - Unique key
+- `post_id` (BIGINT, FK -> `posts.id`) - Reference to target post
+- `user_identifier` (TEXT) - Persistent browser cookie / storage tracker
+- `created_at` (TIMESTAMPTZ) - Time of action
+
+### `comments` Table
+Stores anonymous replies to approved posts.
+- `id` (BIGINT, PK) - Unique key
+- `post_id` (BIGINT, FK -> `posts.id`) - Cascades on post deletion
+- `codename` (TEXT) - Replier signature
+- `message` (TEXT) - Response body
+- `created_at` (TIMESTAMPTZ) - Time of reply
+- `is_approved` (BOOLEAN) - Status checker (default: `true`)
+
+---
+
+## 📂 Detailed Setup Guides
+
+This project includes modular step-by-step documentation for configuring database migrations, security setups, and remote deployment:
+
+* 🗃️ **Database Engine**: [Supabase Database & API Keys Guide](file:///c:/Users/Zankcry/Documents/freedom-wall/SUPABASE_SETUP.md)
+* 🔐 **Policy Fixes**: [Row-Level Security (RLS) Policy Guide](file:///c:/Users/Zankcry/Documents/freedom-wall/RLS_FIX_INSTRUCTIONS.md)
+* ❤️ **Interactive Engine**: [Likes & Comments Migrations](file:///c:/Users/Zankcry/Documents/freedom-wall/LIKES_COMMENTS_SETUP.md)
+* 🔄 **Safety Deletes**: [Soft Delete Migration Guide](file:///c:/Users/Zankcry/Documents/freedom-wall/SOFT_DELETE_SETUP.md)
+* 🚀 **Hosting**: [Vercel Continuous Integration & Deployment Guide](file:///c:/Users/Zankcry/Documents/freedom-wall/VERCEL_DEPLOYMENT.md)
+* 🔧 **Maintenance**: [General Troubleshooting Instructions](file:///c:/Users/Zankcry/Documents/freedom-wall/TROUBLESHOOTING.md)
+
+---
+
+## 📐 Project Structure
 
 ```
 ├── app/
 │   ├── api/
-│   │   └── posts/          # API routes for posts
-│   ├── admin/              # Admin panel page
-│   ├── layout.tsx          # Root layout
-│   └── page.tsx            # Main freedom wall page
+│   │   ├── posts/                  # API endpoints for fetching/submitting posts
+│   │   │   ├── route.ts
+│   │   │   └── [id]/               # Individual post operations (approval, soft delete)
+│   │   │       └── route.ts
+│   │   └── posts/comments          # API endpoints for comments
+│   ├── admin/                      # Moderation interface dashboard
+│   ├── submit/                     # Standalone post creation portal
+│   ├── globals.css                 # Glassmorphic themes & custom animations
+│   ├── layout.tsx                  # Root HTML wrapper
+│   └── page.tsx                    # Main interactive wall feed
 ├── components/
-│   ├── PostCard.tsx        # Post display component
-│   └── PostForm.tsx        # Post submission form
+│   ├── AdminLogin.tsx              # Secure gatekeeper login screen
+│   ├── BackgroundStickers.tsx      # Fluid floating visual accents
+│   ├── CommentButton.tsx           # Collapsible post comment triggers
+│   ├── CommentSection.tsx          # Real-time comment submission and thread list
+│   ├── LikeButton.tsx              # LocalStorage-backed reactive voting heart
+│   ├── PostCard.tsx                # Dynamic glassmorphic item card
+│   ├── PostForm.tsx                # Media-supported submission canvas
+│   └── ThemeToggle.tsx             # Interactive Sun / Moon system toggler
 ├── lib/
-│   └── supabase.ts         # Supabase client configuration
-└── types/
-    └── database.ts         # TypeScript types for database
+│   └── supabase.ts                 # Safe Supabase client bootstrap loader
+├── types/
+│   └── database.ts                 # Type definition interfaces for PostgreSQL models
 ```
 
-## Deployment to Vercel
+---
 
-1. Push your code to GitHub
-2. Import your repository in Vercel
-3. Add your environment variables in Vercel project settings:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `ADMIN_PASSWORD` (set a strong password for admin access)
-4. Deploy!
+## 🔒 Security Practices & Notes
 
-## Security Notes
+1. **Robust Admin Authorization**: The admin panel validates routes server-side checking the `ADMIN_PASSWORD` variable. Ensure a strong password is set in production.
+2. **Explicit Row-Level Security**: Row-Level Security policies are strictly declared to allow standard users (`anon` and `authenticated` roles) to perform target query operations while preventing unauthorized alterations.
+3. **Database Performance**: Appropriate indexes have been added to standard foreign key fields like `post_id` on the `likes` and `comments` tables to ensure high performance under load.
 
-- **Admin Panel Protection**: The admin panel is password-protected. Set `ADMIN_PASSWORD` in your `.env.local` file. The password is verified server-side.
-- The current implementation uses the anon key for all operations. For production:
-  - Set up proper Row Level Security (RLS) policies in Supabase
-  - Use a strong, unique password for `ADMIN_PASSWORD`
-  - Consider using environment variables in Vercel for production
-  - Use Supabase Storage for image uploads instead of storing URLs directly
-  - Implement rate limiting for API routes
+---
 
-## Image Upload
+## 📄 License
 
-Images are currently stored as base64 data URLs in the database. This ensures images work across all browsers and sessions. 
+This project is licensed under the [MIT License](file:///c:/Users/Zankcry/Documents/freedom-wall/LICENSE).
 
-**Note:** Base64 encoding increases the data size by about 33%. For production with many images, consider:
-
-1. Setting up Supabase Storage
-2. Uploading images to a storage bucket
-3. Storing the returned URLs in the database
-
-**Current limitations:**
-- Maximum image size: 5MB per image
-- Images are embedded in the database (increases database size)
-
-## License
-
-MIT
