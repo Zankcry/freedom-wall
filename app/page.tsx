@@ -5,6 +5,7 @@ import PostCard from '@/components/PostCard';
 import { Post } from '@/types/database';
 import Link from 'next/link';
 import BackgroundStickers from '@/components/BackgroundStickers';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -32,48 +33,59 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 relative">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 relative selection:bg-indigo-500/25">
       <BackgroundStickers />
-      <div className="container mx-auto px-4 py-8 max-w-4xl relative z-10">
-        <header className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-gray-800 mb-2">Freedom Wall</h1>
-          <p className="text-gray-600 text-lg mb-6">Share your thoughts and messages</p>
+      
+      {/* Floating Theme Switcher top header layout */}
+      <div className="absolute top-6 right-6 z-30">
+        <ThemeToggle />
+      </div>
+
+      <div className="container mx-auto px-4 py-16 max-w-2xl relative z-10">
+        <header className="text-center mb-12">
+          {/* Stunning styled heading */}
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2.5 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-950 dark:from-zinc-50 dark:via-zinc-200 dark:to-zinc-100 bg-clip-text text-transparent">
+            Freedom Wall
+          </h1>
+          <p className="text-slate-500 dark:text-zinc-400 text-sm md:text-base font-normal max-w-md mx-auto leading-relaxed mb-6">
+            An open forum to share your authentic feelings, support messages, and anonymous whispers.
+          </p>
           <div className="flex gap-4 justify-center">
             <Link
               href="/submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              className="bg-slate-900 text-white dark:bg-zinc-50 dark:text-zinc-900 px-6 py-2.5 rounded-full font-bold hover:scale-105 active:scale-98 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-indigo-500/5 dark:hover:shadow-purple-500/5 hover:bg-slate-800 dark:hover:bg-zinc-200 cursor-pointer text-xs"
             >
               Submit a Message
             </Link>
           </div>
         </header>
 
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-xl mx-auto space-y-6">
           {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              <p className="mt-4 text-gray-600">Loading posts...</p>
+            <div className="text-center py-20 animate-pulse">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-slate-300 dark:border-zinc-700 border-t-indigo-600 dark:border-t-indigo-400 mb-4"></div>
+              <p className="text-xs font-semibold text-slate-400 dark:text-zinc-500">Decrypting messages...</p>
             </div>
           ) : error ? (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <div className="p-3.5 bg-rose-50 dark:bg-rose-950/10 border border-rose-100 dark:border-rose-900/20 text-rose-600 dark:text-rose-400 rounded-2xl text-xs font-semibold text-center">
               {error}
             </div>
           ) : posts.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-md p-8 text-center">
-              <p className="text-gray-600 text-lg mb-4">No posts yet. Be the first to share!</p>
+            <div className="glass-panel border border-slate-200/40 dark:border-zinc-800/40 rounded-3xl p-10 text-center shadow-[0_4px_25px_rgba(0,0,0,0.01)] backdrop-blur-xl animate-fadeIn">
+              <p className="text-slate-500 dark:text-zinc-400 text-sm font-medium mb-5">No thoughts have been pinned yet. Be the first!</p>
               <Link
                 href="/submit"
-                className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
+                className="inline-block bg-slate-900 text-white dark:bg-zinc-50 dark:text-zinc-900 px-6 py-2.5 rounded-full font-bold hover:scale-105 active:scale-98 transition-all duration-300 shadow-md hover:bg-slate-800 dark:hover:bg-zinc-200 cursor-pointer text-xs"
+              >
                 Submit Your First Message
               </Link>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-fadeIn">
               {posts.map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}
-        </div>
+            </div>
           )}
         </div>
       </div>

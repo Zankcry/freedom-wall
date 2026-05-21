@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
   const [message, setMessage] = useState('');
@@ -113,6 +113,11 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
     }
   };
 
+  const removeImage = (indexToRemove: number) => {
+    setImages(prev => prev.filter((_, idx) => idx !== indexToRemove));
+    setImageFiles(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -120,8 +125,6 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
     setIsSubmitting(true);
 
     try {
-      // Images are already converted to base64 data URLs
-      // These will be stored in the database and work across all browsers
       const response = await fetch('/api/posts', {
         method: 'POST',
         headers: {
@@ -137,7 +140,6 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
       if (!response.ok) {
         let errorMessage = 'Failed to submit post';
         
-        // Handle 413 Payload Too Large error specifically
         if (response.status === 413) {
           errorMessage = 'Images are too large. Please use fewer or smaller images (max 2MB each, 4 images total).';
           setImages([]);
@@ -147,7 +149,6 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
             const data = await response.json();
             errorMessage = data.error || errorMessage;
           } catch (jsonError) {
-            // If response is not JSON, get text
             const text = await response.text();
             errorMessage = text || errorMessage;
           }
@@ -165,7 +166,6 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
         onSuccess();
       }
 
-      // Reset success message after 3 seconds
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -175,44 +175,40 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full">
+    <form onSubmit={handleSubmit} className="w-full space-y-6">
       {!onSuccess && (
-        <>
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">Share Your Message</h2>
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-gray-700">
-              <strong>📋 Review Process:</strong> All messages are reviewed by an administrator and will be <strong>approved or rejected</strong> before being posted on the Freedom Wall.
-            </p>
-          </div>
-        </>
+        <div className="p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/10 border border-indigo-100/50 dark:border-indigo-900/25">
+          <p className="text-xs text-indigo-700 dark:text-indigo-400 font-medium flex items-center gap-1.5">
+            <span>📋</span> All submissions are reviewed by an administrator before appearing publicly.
+          </p>
+        </div>
       )}
       
       {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+        <div className="p-3.5 bg-rose-50 dark:bg-rose-950/10 border border-rose-100 dark:border-rose-900/20 text-rose-600 dark:text-rose-400 rounded-2xl text-xs font-medium">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-400 rounded-lg">
+        <div className="p-4.5 bg-emerald-50/70 dark:bg-emerald-950/10 border border-emerald-100 dark:border-emerald-900/20 rounded-2xl animate-fadeIn">
           <div className="flex items-start">
-            <svg className="w-5 h-5 text-green-600 mt-0.5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <p className="font-semibold text-green-800 mb-1">Message Submitted Successfully!</p>
-              <p className="text-sm text-green-700">
-                Your message has been received and will be reviewed by an administrator. 
-                It will be approved or rejected before being posted on the Freedom Wall. 
-                Thank you for your submission!
+              <p className="font-semibold text-emerald-800 dark:text-emerald-350 text-xs mb-0.5">Post Submitted!</p>
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 leading-normal">
+                Your thoughts have been safely cataloged and are waiting in our verification queue.
               </p>
             </div>
           </div>
         </div>
       )}
 
-      <div className="mb-4">
-        <label htmlFor="codename" className="block text-sm font-medium text-gray-700 mb-2">
+      {/* Input Codename */}
+      <div className="space-y-2">
+        <label htmlFor="codename" className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
           Your Codename
         </label>
         <input
@@ -221,13 +217,14 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
           value={codename}
           onChange={(e) => setCodename(e.target.value)}
           required
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white placeholder:text-gray-500"
-          placeholder="Enter your codename"
+          className="w-full px-4 py-3 border border-slate-200 dark:border-zinc-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm text-slate-800 dark:text-zinc-100 bg-white/70 dark:bg-zinc-900/50 placeholder:text-slate-400 dark:placeholder:text-zinc-550 transition-all duration-300"
+          placeholder="Anonymous Wanderer"
         />
       </div>
 
-      <div className="mb-4">
-        <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+      {/* Input Message */}
+      <div className="space-y-2">
+        <label htmlFor="message" className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
           Your Message
         </label>
         <textarea
@@ -236,49 +233,68 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
           onChange={(e) => setMessage(e.target.value)}
           required
           rows={6}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 bg-white placeholder:text-gray-500"
-          placeholder="Write your message here..."
+          className="w-full px-4 py-3 border border-slate-200 dark:border-zinc-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm text-slate-800 dark:text-zinc-100 bg-white/70 dark:bg-zinc-900/50 placeholder:text-slate-400 dark:placeholder:text-zinc-550 resize-none transition-all duration-300"
+          placeholder="Unleash your feelings, tell a secret, or share support..."
         />
       </div>
 
-      <div className="mb-4">
-        <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-2">
-          Images (Optional)
+      {/* Upload Box */}
+      <div className="space-y-2.5">
+        <label htmlFor="images" className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+          Add Media (Optional)
         </label>
-        <p className="text-xs text-gray-500 mb-2">
-          Maximum 4 images, 2MB each. Images will be automatically compressed.
-        </p>
-        <input
-          type="file"
-          id="images"
-          accept="image/*"
-          multiple
-          onChange={handleImageChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
+        
+        {/* Upload Drop Zone */}
+        <div className="relative group/zone border-2 border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl hover:border-indigo-400 dark:hover:border-zinc-700 transition-colors duration-300 p-6 flex flex-col items-center justify-center cursor-pointer bg-slate-50/20 dark:bg-zinc-900/10">
+          <input
+            type="file"
+            id="images"
+            accept="image/*"
+            multiple
+            onChange={handleImageChange}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+          <svg className="w-8 h-8 text-slate-400 group-hover/zone:text-indigo-500 dark:text-zinc-500 transition-colors duration-300 mb-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375 0 11-.75 0 .375 0 01.75 0z" />
+          </svg>
+          <span className="text-xs font-semibold text-slate-700 dark:text-zinc-350">Click to select files</span>
+          <span className="text-[10px] text-slate-400 dark:text-zinc-500 mt-1">Up to 4 images, max 2MB each</span>
+        </div>
+
+        {/* Thumbnail Previews with dynamic trash close button */}
         {images.length > 0 && (
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 animate-fadeIn">
             {images.map((image, index) => (
-              <div key={index} className="relative w-full h-32 rounded-lg overflow-hidden">
+              <div key={index} className="group relative w-full h-24 rounded-2xl overflow-hidden border border-slate-200/50 dark:border-zinc-800/40">
                 <img
                   src={image}
                   alt={`Preview ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-rose-600 text-white rounded-full p-1 transition-colors duration-200 cursor-pointer"
+                  aria-label="Remove image"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
             ))}
           </div>
         )}
       </div>
 
+      {/* Submit Button */}
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+        className="w-full bg-slate-900 text-white dark:bg-zinc-50 dark:text-zinc-900 py-3.5 px-4 rounded-2xl font-bold hover:bg-slate-800 dark:hover:bg-zinc-200 active:scale-99 transition-all duration-200 disabled:bg-slate-200 dark:disabled:bg-zinc-800 disabled:text-slate-400 dark:disabled:text-zinc-500 disabled:cursor-not-allowed text-xs shadow-sm cursor-pointer"
       >
-        {isSubmitting ? 'Submitting...' : 'Submit Message'}
+        {isSubmitting ? 'Verifying Payload...' : 'Submit Message'}
       </button>
     </form>
   );
 }
-

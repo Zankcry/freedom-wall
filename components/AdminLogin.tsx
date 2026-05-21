@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import BackgroundStickers from './BackgroundStickers';
 
 interface AdminLoginProps {
   onSuccess: () => void;
@@ -31,7 +32,6 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
         throw new Error(data.error || 'Authentication failed');
       }
 
-      // Store authentication in sessionStorage
       sessionStorage.setItem('adminAuthenticated', 'true');
       onSuccess();
     } catch (err) {
@@ -42,21 +42,23 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center px-4">
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center">Admin Login</h1>
-        <p className="text-gray-600 text-center mb-6">Enter the admin password to continue</p>
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex items-center justify-center px-4 relative selection:bg-indigo-500/25">
+      <BackgroundStickers />
+      
+      <div className="glass-panel rounded-3xl border border-slate-200/40 dark:border-zinc-800/40 p-8 max-w-md w-full shadow-[0_8px_35px_rgba(0,0,0,0.01)] backdrop-blur-xl relative z-10 animate-fadeIn">
+        <h1 className="text-3xl font-extrabold text-slate-800 dark:text-zinc-50 mb-2 text-center tracking-tight">Admin Console</h1>
+        <p className="text-slate-500 dark:text-zinc-400 text-xs text-center mb-6">Enter credentials to unlock administrative settings</p>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-950/10 border border-rose-100 dark:border-rose-900/20 text-rose-600 dark:text-rose-400 rounded-2xl text-xs font-semibold text-center">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Admin Password
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="password" className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+              Access Token / Password
             </label>
             <input
               type="password"
@@ -64,8 +66,8 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter admin password"
+              className="w-full px-4 py-3 border border-slate-200 dark:border-zinc-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm text-slate-800 dark:text-zinc-100 bg-white/70 dark:bg-zinc-900/50 placeholder:text-slate-400 dark:placeholder:text-zinc-650 transition-all duration-300"
+              placeholder="••••••••••••"
               autoFocus
             />
           </div>
@@ -73,13 +75,12 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full bg-slate-900 text-white dark:bg-zinc-50 dark:text-zinc-900 py-3.5 px-4 rounded-2xl font-bold hover:bg-slate-800 dark:hover:bg-zinc-200 active:scale-99 transition-all duration-200 disabled:bg-slate-200 dark:disabled:bg-zinc-800 disabled:text-slate-400 dark:disabled:text-zinc-500 disabled:cursor-not-allowed text-xs cursor-pointer shadow-sm mt-2"
           >
-            {isLoading ? 'Authenticating...' : 'Login'}
+            {isLoading ? 'Decrypting Access Key...' : 'Unlock Panel'}
           </button>
         </form>
       </div>
     </div>
   );
 }
-

@@ -12,6 +12,7 @@ export default function LikeButton({ postId }: LikeButtonProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isToggling, setIsToggling] = useState(false);
   const [userIdentifier, setUserIdentifier] = useState<string>('');
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     // Generate or retrieve user identifier from localStorage
@@ -53,6 +54,9 @@ export default function LikeButton({ postId }: LikeButtonProps) {
 
     try {
       setIsToggling(true);
+      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(false), 400);
+
       const response = await fetch(`/api/posts/${postId}/likes`, {
         method: 'POST',
         headers: {
@@ -77,11 +81,8 @@ export default function LikeButton({ postId }: LikeButtonProps) {
 
   if (isLoading) {
     return (
-      <button
-        disabled
-        className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100/50 dark:bg-zinc-900/50 border border-slate-200/20 dark:border-zinc-800/20 text-slate-400 dark:text-zinc-500 text-xs font-medium">
+        <svg className="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -90,7 +91,7 @@ export default function LikeButton({ postId }: LikeButtonProps) {
           />
         </svg>
         <span>...</span>
-      </button>
+      </div>
     );
   }
 
@@ -98,27 +99,27 @@ export default function LikeButton({ postId }: LikeButtonProps) {
     <button
       onClick={handleToggleLike}
       disabled={isToggling}
-      className={`flex items-center gap-2 transition-colors ${
+      className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all duration-300 ${
         hasLiked
-          ? 'text-red-600 hover:text-red-700'
-          : 'text-gray-500 hover:text-red-600'
-      } ${isToggling ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          ? 'bg-rose-50/70 border-rose-100 dark:bg-rose-950/10 dark:border-rose-900/20 text-rose-600 dark:text-rose-400'
+          : 'bg-slate-50/50 border-slate-200/50 dark:bg-zinc-900/30 dark:border-zinc-800/30 text-slate-500 hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-400 hover:bg-rose-50/30 dark:hover:bg-rose-950/5'
+      } ${isToggling ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer active:scale-95'}`}
     >
       <svg
-        className={`w-5 h-5 ${hasLiked ? 'fill-current' : ''}`}
-        fill={hasLiked ? 'currentColor' : 'none'}
+        className={`w-4 h-4 transition-transform duration-300 ${
+          isAnimating ? 'scale-130' : 'group-hover:scale-110'
+        } ${hasLiked ? 'fill-rose-600 dark:fill-rose-400' : 'fill-none'}`}
         stroke="currentColor"
+        strokeWidth={hasLiked ? 1.5 : 2}
         viewBox="0 0 24 24"
       >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={2}
           d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
         />
       </svg>
-      <span className="font-medium">{likeCount}</span>
+      <span className="font-semibold text-xs transition-colors duration-300">{likeCount}</span>
     </button>
   );
 }
-
